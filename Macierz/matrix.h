@@ -2,8 +2,7 @@
 #include<iostream>
 /* TODO:
 *	Constuctor from file
-*	Operator*
-*	Operator<<
+
 *	function invert
 *	function transpose
 *	ask Prof. about more stuff to write in C++
@@ -24,7 +23,7 @@ public:
 	struct WrongDim{};
 	class RowProxy;
 	CMatrix(){new Matrix(0,0,nullptr);}
-	CMatrix(int r,int c, double identityValue, double defaultValue=0.0);
+	CMatrix(int r,int c, double identityValue=0.0, double defaultValue=0.0);
 	CMatrix(std::fstream file);	
 	CMatrix(const &CMatrix cpy_obj);
 
@@ -79,8 +78,18 @@ CMatrix::CMatrix(std::fstream file)
 // Operators overloading
 CMatrix::operator*(const CMatrix& rhs)
 {
-	
-	
+	if(cols!=rhs.rows)
+		throw WrongDim;
+	CMatrix temp(rows,rhs.cols);
+	for(int i=0;i<rows;++i)
+	{
+		for(int j=0;j<cols; ++j)
+		{
+			for(int k=0;k<cols;++k)
+			temp[i][j] +=  (*this)[i][k] * rhs[k][j];
+		}
+	}
+	return temp;
 }
 
 CMatrix::operator+(const CMatrix& rhs)
@@ -122,7 +131,13 @@ CMatrix& CMatrix::operator=(const CMatrix& rhs)
 
 std::ostream& CMatrix::operator<<(std::ostream& os, const CMatrix& obj)
 {
-	
+	for(int i=0;i<obj.data->rows;++i)
+	{
+		for(int j=0; j<obj.data->cols;++i)
+			os<<obj[i][j]<<' ';
+			os<<std::endl;			
+	}
+	return os;
 }
 
 //Proxy class for double indexation
