@@ -35,17 +35,9 @@ struct Matrix
 		if(initV==nullptr)
 			throw null_init_value();
 		
-		data=new double*[row];
+		data=initV;
 		rows=row;
 		cols=col;
-		
-		//copy stuff
-		for(int i=0;i<row;++i)
-		{
-			data[i]=new double[col];
-			for(int j=0;j<col;++j)
-				data[i][j]=initV[i][j];
-		}
 		
 		
 	}
@@ -108,7 +100,7 @@ struct Matrix
 
 class CMatrix {
 
-
+	void operator() () = delete;
 	friend class Matrix;
 	Matrix *data;
 	void check(unsigned int col,unsigned int row);
@@ -136,6 +128,9 @@ public:
 	CMatrix& operator= (const CMatrix& rhs);
 
 	RowProxy operator[](const int x);
+	//ConstRowProxy operator[](const int x) const;
+	const double* operator[](const int x) const
+	{return data->data[x];	}
 	
 	//CMatrix& invert();
 	//CMatrix& transpose();

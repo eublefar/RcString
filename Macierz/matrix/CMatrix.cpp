@@ -38,15 +38,20 @@ CMatrix::CMatrix(const CMatrix &cpy_obj)
 
 CMatrix::CMatrix(int r,int c, double identityValue, double defaultValue)
 {
-	double init_values[r][c];
-	for(int i=0;i<r;++i)
-		for(int j=0;j<c;++j)
-		{
-			if(i==j)
-				init_values[i][j]=identityValue;
-			else
-				init_values[i][j]=defaultValue;
-		}
+    double **init_values;
+    init_values = new double*[r];
+    for(int i=0;i<r;++i)
+            {
+                init_values[i]=new double[c];
+                for(int j=0;j<c;++j)
+                {
+                    if(i==j)
+                        init_values[i][j]=identityValue;
+                    else
+                        init_values[i][j]=defaultValue;
+                }
+            }
+
 	data = new Matrix(r, c, (double**)init_values);
 	
 }
@@ -56,11 +61,19 @@ CMatrix::CMatrix(std::ifstream &file)
 		if(!file)
 			throw std::exception();
 		unsigned int columns, rows;
+		double** init_values;
+		file>>rows;		
 		file>>columns;
-		file>>rows;
-		CMatrix(columns,rows);
-		for(int i=0;i<columns;++i)
-			for(int j=0;j<rows;++j)
+		
+		init_values = new double*[rows];
+    			for(int i=0;i<rows;++i)
+            			{
+                			init_values[i]=new double[columns];
+				}
+		data = new Matrix(rows, columns, (double**)init_values);
+
+		for(int i=0;i<rows ;++i)
+			for(int j=0;j<columns;++j)
 				file>>(*this)[i][j];
 	}
 
@@ -71,12 +84,13 @@ CMatrix CMatrix::operator*(const CMatrix& rhs)
 	if(data->cols!=rhs.data->rows)
 		throw WrongDim();
 	CMatrix temp(data->rows,rhs.data->cols);
+    CMatrix& t=*this;
 	for(int i=0;i<data->rows;++i)
 	{
-		for(int j=0;j<data->cols; ++j)
+		for(int j=0;j<rhs.data->cols; ++j)
 		{
 			for(int k=0;k<data->cols;++k)
-			temp[i][j] +=  ((*this)[i][k]) * (rhs[k][j]);
+            (temp[i][j]) +=  (t[i][k]) * (rhs[k][j]);
 		}
 	}
 	return temp;
@@ -86,10 +100,11 @@ CMatrix CMatrix::operator+(const CMatrix& rhs)
 {
 		if(data->cols!=rhs.data->cols || data->rows!=rhs.data->rows)
 			throw WrongDim();
-		CMatrix temp();
+        CMatrix temp(data->rows,data->cols);
+        CMatrix& t=*this;
 		for(int i=0;i<data->rows;++i)
 			for(int j=0;j<data->cols;++j)
-				temp[i][j]= (*this)[i][j] + rhs[i][j];
+                (temp[i][j])= (t[i][j]) + (rhs[i][j]);
 			return temp;
 }
 
@@ -97,10 +112,11 @@ CMatrix CMatrix::operator-(const CMatrix& rhs)
 {
 		if(data->cols!=rhs.data->cols || data->rows!=rhs.data->rows)
 			throw WrongDim();
-		CMatrix temp();
+        CMatrix temp(data->rows,data->cols);
+        CMatrix& t=*this;
 		for(int i=0;i<data->rows;++i)
 			for(int j=0;j<data->cols;++j)
-				temp[i][j]= (*this)[i][j] - rhs[i][j];
+                (temp[i][j])= (t[i][j]) - (rhs[i][j]);
 			return temp;
 }
 
@@ -121,9 +137,9 @@ CMatrix& CMatrix::operator=(const CMatrix& rhs)
 
 std::ostream& operator<<(std::ostream& os, const CMatrix& obj)
 {
-	for(int i=0;i<obj.data->rows;++i)
+    for(int i=0;i< (obj.data->rows);++i)
 	{
-		for(int j=0; j<obj.data->cols;++i)
+        for(int j=0; j< (obj.data->cols);++j)
 			os<<obj[i][j]<<' ';
 
 			os<<std::endl;			
@@ -131,5 +147,9 @@ std::ostream& operator<<(std::ostream& os, const CMatrix& obj)
 	return os;
 }
 
-
+void CMatrix::check(unsigned int row,unsigned int col)
+{
+    if(col >= data->cols || row >= data->rows)
+        throw(IndexOutOfRange());
+}
 
