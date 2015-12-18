@@ -1,5 +1,6 @@
 #pragma once
 #include <fstream>
+#include <new>  
 //
 //
 //
@@ -120,6 +121,7 @@ public:
 	CMatrix(int r,int c, double identityValue=0.0, double defaultValue=0.0);
 	CMatrix(std::ifstream &file);	
 	CMatrix(const CMatrix &cpy_obj);
+	~CMatrix(){delete data;}
 
 	friend std::ostream& operator<<(std::ostream& os, const CMatrix& obj);
 	CMatrix operator+(const CMatrix& rhs);

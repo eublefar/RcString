@@ -1,5 +1,5 @@
 #include "CMatrix.h"
-
+using namespace std;
 
 CMatrix::RowProxy::RowProxy( CMatrix * iData,unsigned int iRow){data=iData; row=iRow;}
 	
@@ -66,15 +66,35 @@ CMatrix::CMatrix(std::ifstream &file)
 		file>>columns;
 		
 		init_values = new double*[rows];
+
     			for(int i=0;i<rows;++i)
             			{
-                			init_values[i]=new double[columns];
-				}
-		data = new Matrix(rows, columns, (double**)init_values);
+				try{
+                				init_values[i]=new double[columns];
+					}catch(bad_alloc  &e)
+					{
+						for(int z=0;z<i;++z)
+						delete[] init_values[z];
 
+						delete[] init_values;
+						
+					} 
+				}
+		try{
+		data = new Matrix(rows, columns, (double**)init_values);
+			}catch(bad_alloc  &e)
+					{
+						for(int z=0;z<rows;++z)
+						delete[] init_values[z];
+
+						delete[] init_values;
+						
+					} 
 		for(int i=0;i<rows ;++i)
 			for(int j=0;j<columns;++j)
 				file>>(*this)[i][j];
+
+	
 	}
 
 
@@ -123,12 +143,13 @@ CMatrix CMatrix::operator-(const CMatrix& rhs)
 CMatrix& CMatrix::operator=(const CMatrix& rhs)
 {
 	if(data->ref_count==1){
-    *data = *(rhs.data);
-	rhs.data->ref_count++;
+		
+    		data = rhs.data;
+		rhs.data->ref_count++;
 	}
   else
   {
-    Matrix* t = new Matrix(rhs.data->rows,rhs.data->cols, rhs.data->data );
+    Matrix* t = rhs.data;
     data->ref_count--;
     data= t;
   };
